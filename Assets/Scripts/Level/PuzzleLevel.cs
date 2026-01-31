@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,26 +5,37 @@ using UnityEngine;
 public class PuzzleLevel
 {
 
-    public PuzzleLevelData levelData { get; private set; }
-    private List<PuzzleEntity> activeEntities = new List<PuzzleEntity>();
+    public PuzzleLevelData LevelData { get; private set; }
+    private List<PuzzleEntity> ActiveEntities = new List<PuzzleEntity>();
+    public PuzzleTileNode[,] Grid { get; private set; } 
 
     public PuzzleLevel(PuzzleLevelData data)
     {
-        levelData = data;
+        LevelData = data;
         // TODO: Additional initialization logic here
-        InitializeGrid();
+        LoadGridFromData();
     }
 
-    private void InitializeGrid()
-    {
-        throw new NotImplementedException("InitializeGrid method not implemented yet.");
+    public void LoadGridFromData()
+{
+        Grid = new PuzzleTileNode[LevelData.width, LevelData.height];
 
-        // InstantiateDynamicEntities();
+        for (int i = 0; i < LevelData.layout.Length; i++)
+        {
+            // Convert 1D Index -> 2D Coordinates
+            int x = i % LevelData.width;
+            int y = i / LevelData.width;
+
+            PuzzleTileType type = LevelData.layout[i];
+
+            // Create the live node
+            Grid[x, y] = new PuzzleTileNode { x = x, y = y, type = type };
+        }
     }
 
     private void InstantiateDynamicEntities()
     {
-        foreach (var entity in levelData.dynamicEntities)
+        foreach (var entity in LevelData.entities)
         {
             // TODO: Initialize or activate dynamic entities
         }
