@@ -50,7 +50,7 @@ MonoBehaviour:
   whatStopsMovement:
     serializedVersion: 2
     m_Bits: 1024
-  currentBlockData: {fileID: 11400000, guid: d1bdb774d510046d18f4c372ffc22b15, type: 2}
+  currentBlockData: {fileID: 0}
   unboxStationData: {fileID: 11400000, guid: 28b925f35c8db4dc3b2d91fad30b8032, type: 2}
   containedItem: {fileID: 11400000, guid: 427d5f9318e0649db97d2dad8f9a76aa, type: 2}
   inventoryItemPrefab: {fileID: 8642134145524706643, guid: ee0d79887564f44d9b18a41864f9478d, type: 3}
@@ -58,7 +58,7 @@ MonoBehaviour:
   groundTileLayer:
     serializedVersion: 2
     m_Bits: 256
-  emptyBoxSprite: {fileID: -5869873724788712370, guid: f4ecd1c2695fb4562bad278f4be4a26a, type: 3}
+  emptyBoxSprite: {fileID: 0}
   spriteRenderer: {fileID: 5375078157123270762}
 --- !u!212 &5375078157123270762
 SpriteRenderer:

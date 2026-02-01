@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff030881511e2489b8a23d6f93225db9, type: 3}
-  m_Name: KeyGreen
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_Script: {fileID: 11500000, guid: 55221cbb4baef446baf7681f0a0486f2, type: 3}
+  m_Name: KeyRed
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
+  id: KeyRed
   displayName: Red Key
-  sprite: {fileID: 1304365964, guid: b9a2c02231e894a988aa9b65db3cb62c, type: 3}
-  type: 2
+  sprite: {fileID: 1185440864, guid: b9a2c02231e894a988aa9b65db3cb62c, type: 3}
   keepBetweenLevels: 0
+  inventoryItemType: 0
