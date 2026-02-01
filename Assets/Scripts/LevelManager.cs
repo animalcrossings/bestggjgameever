@@ -21,6 +21,7 @@ public class LevelManager : MonoBehaviour
     {
         Debug.LogFormat("LevelManager: Loading level {0}.", levelName);
         UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+        InventoryManager.Instance.ReloadLevelInventory(levelName);
     }
 
     public void RestartLevel()
@@ -28,6 +29,7 @@ public class LevelManager : MonoBehaviour
         string currentLevelName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         Debug.LogFormat("LevelManager: Restarting level {0}.", currentLevelName);
         UnityEngine.SceneManagement.SceneManager.LoadScene(currentLevelName);
+        InventoryManager.Instance.ReloadLevelInventory(currentLevelName);
     }
 
     public void QuitGame()

@@ -48,8 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakableBlock
   requiredMask: {fileID: 11400000, guid: 3850845bbc83a41a1a283993929d7c7b, type: 2}
-  linkedBlocks:
-  - {fileID: 0}
+  linkedBlocks: []
   tooltipText: {fileID: 46896344399450115}
 --- !u!212 &9054214522330778370
 SpriteRenderer:

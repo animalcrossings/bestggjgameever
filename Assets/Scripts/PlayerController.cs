@@ -2,18 +2,20 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using System.Collections.Generic;
+using UnityEditor;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public Transform TargetPosition;
-    public LayerMask whatStopsMovement;
+    public List<LayerMask> whatStopsMovement;
     public float teleportCooldownTime = 0.5f;
     
     [Header("Interaction Settings")]
     [SerializeField] public LayerMask interactableLayer;
-    private const float INTERACT_DISTANCE = 1.5f;
+    private const float INTERACT_DISTANCE = 3f;
     private const float TOOLTIP_DISTANCE = 5.0f;
 
     [Header("Input")]
@@ -70,9 +72,22 @@ public class PlayerController : MonoBehaviour
     {
         // Update facing direction for interactions
         lastFacingDirection = direction;
+        
+
+        bool IsBlocked = false;
+
+        // Check multiple layers for obstacles
+        foreach (LayerMask layer in whatStopsMovement)
+        {
+            if (Physics2D.OverlapCircle(TargetPosition.position + direction, 0.2f, layer))
+            {
+                IsBlocked = true;
+                break;
+            }
+        }
 
         // Check if the target tile is blocked
-        if (!Physics2D.OverlapCircle(TargetPosition.position + direction, 0.2f, whatStopsMovement))
+        if (!IsBlocked)
         {
             // Tile is free, move target
             TargetPosition.position += direction;
@@ -88,13 +103,23 @@ public class PlayerController : MonoBehaviour
     private void HandleObstacleInteraction(Vector3 direction)
     {
         // Cast ray from current position to see what we hit
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 1f, whatStopsMovement);
-
-        if (hit.collider != null)
+        RaycastHit2D hit;
+        Collider2D collider = null;
+        foreach (LayerMask layer in whatStopsMovement)
         {
-            if (hit.collider.CompareTag("Moveable"))
+            hit = Physics2D.Raycast(transform.position, direction, 1f, layer);
+            if (hit.collider != null)
             {
-                MoveableBlockController block = hit.collider.GetComponent<MoveableBlockController>();
+                collider = hit.collider;
+                break;
+            }
+        }
+
+        if (collider != null)
+        {
+            if (collider.CompareTag("Moveable"))
+            {
+                MoveableBlockController block = collider.GetComponent<MoveableBlockController>();
                 if (block != null && block.Push(direction))
                 {
                     // If block moved successfully, we can move into its space
@@ -102,9 +127,9 @@ public class PlayerController : MonoBehaviour
                     AudioManager.Instance.PlayFootstepSound();
                 }
             }
-            else if (hit.collider.CompareTag("Teleporter"))
+            else if (collider.CompareTag("Teleporter"))
             {
-                PortalController portal = hit.collider.GetComponent<PortalController>();
+                PortalController portal = collider.GetComponent<PortalController>();
                 if (portal != null)
                 {
                     PerformTeleport(portal);
@@ -130,13 +155,6 @@ public class PlayerController : MonoBehaviour
         return hit.collider != null ? hit.collider.gameObject : null;
     }
 
-    // (GetNearby and GetClosestInteractable left unchanged as they looked fine)
-    public GameObject[] GetNearby(float distance, LayerMask layerMask)
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, distance, layerMask);
-        return hits.Length == 0 ? null : Array.ConvertAll(hits, hit => hit.gameObject);
-    }
-
     public void CheckInteractionPrompts()
     {
         // Optimization: Only run this check if we aren't moving? 
@@ -153,11 +171,14 @@ public class PlayerController : MonoBehaviour
     public void TryInteract()
     {
         GameObject lookingAt = GetLookingAt(INTERACT_DISTANCE, interactableLayer);
-        if (lookingAt != null)
+        if (lookingAt == null)
         {
-            IInteractable interactable = lookingAt.GetComponent<IInteractable>();
-            interactable?.OnInteract();
+            Debug.LogFormat("PlayerController: No interactable in range.");
+            return;
         }
+        Debug.LogFormat("PlayerController: Interacting with {0}.", lookingAt.name);
+        IInteractable interactable = lookingAt.GetComponent<IInteractable>();
+        interactable?.OnInteract();
     }
 
     // (OnTriggerEnter2D left unchanged)
@@ -166,12 +187,12 @@ public class PlayerController : MonoBehaviour
          if (collision.CompareTag("Item")) GameManager.Instance.HandleItemPickup(collision.gameObject);
          else if (collision.CompareTag("Door")) GameManager.Instance.TryOpenDoor(collision.gameObject);
          else if (collision.CompareTag("Mask")) GameManager.Instance.HandleItemPickup(collision.gameObject);
-         else if (collision.CompareTag("Portal"))
-         {
-             // Added null check for safety
-             Portal portal = collision.GetComponent<Portal>();
-             if (portal) GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
-         }
+        //  else if (collision.CompareTag("Portal"))
+        //  {
+        //      // Added null check for safety
+        //      Portal portal = collision.GetComponent<Portal>();
+        //      if (portal) GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
+        //  }
     }
 
     void OnDrawGizmosSelected()

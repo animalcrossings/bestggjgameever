@@ -9,11 +9,15 @@ public class UIManager : MonoBehaviour
 
     [Header("Inventory Panels")]
     [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private GameObject popupPanel;
+
 
     [Header("Prefabs")]
     [SerializeField] private GameObject inventorySlotPrefab;
 
     private Dictionary<int, GameObject> inventorySlotObjects = new Dictionary<int, GameObject>();
+
+    public float PopupDisplayDuration = 5.0f;
 
 
     private void Awake()
@@ -27,6 +31,12 @@ public class UIManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public void ShowPopupMessage(string message)
+    {
+        // Logic to show popup message on screen
+        Debug.Log("[UIManager] Popup Message: " + message);
     }
 
     public void Start()
@@ -48,6 +58,8 @@ public class UIManager : MonoBehaviour
     {
         UpdatePanel(InventoryManager.Instance.InventoryItems);
     }
+
+    
 
     private void UpdatePanel(InventoryItem[] items)
     {

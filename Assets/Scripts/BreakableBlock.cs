@@ -8,6 +8,8 @@ public class BreakableBlock : MonoBehaviour, IInteractable
 
     [SerializeField] public InventoryItemData requiredMask = GameManager.Instance.tribalMask;
     [SerializeField] public List<BreakableBlock> linkedBlocks;
+
+    [SerializeField] public GameObject interactionPromptObject;
     [SerializeField] public TextMeshPro tooltipText;
     public bool IsBreakable = true;
 
