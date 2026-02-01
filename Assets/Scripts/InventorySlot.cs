@@ -1,48 +1,55 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+#nullable enable
 public class InventorySlot : MonoBehaviour
 {
-    public ItemData itemData;
-    public MaskData maskData;
+    public InventoryItemData? inventoryItemData;
 
     [Header("References")]
-    public Image IconImage;    
-    public bool isMask;
+    [SerializeField] public Image IconImage;    
+    [SerializeField] public Image? BgImage;
+    [SerializeField] public Sprite? BgSprite;
+    [SerializeField] public Sprite? SelectedBgSprite;
 
+    private bool isSelected = false;
 
-
-    public void Setup(ItemData item)
+    public void Awake()
     {
-        itemData = item;
-        isMask = false;
-        IconImage.sprite = item.sprite;
+        if (BgImage != null && BgSprite != null)
+        {
+            BgImage.sprite = BgSprite;
+        }
     }
 
-    public void Setup(MaskData mask)
+    public void Start()
     {
-        maskData = mask;
-        isMask = true;
-        IconImage.sprite = mask.sprite;
+        
+    }
 
-        // Get sizes from mask.sprite,
-        // Align the RectTransform accordingly
-
-        int height, width;
-        height = mask.sprite.texture.height;
-        width = mask.sprite.texture.width;
-
-        float aspectRatio = (float)width / height;
-
-        RectTransform rt = IconImage.GetComponent<RectTransform>();
-        if (aspectRatio >= 1.0f)
+    public void SetSelected(bool selected)
+    {
+        isSelected = selected;
+        if (BgImage != null)
         {
-            rt.sizeDelta = new Vector2(100.0f, 100.0f / aspectRatio);
+            BgImage.sprite = isSelected && SelectedBgSprite != null ? SelectedBgSprite : BgSprite;
         }
-        else
-        {
-            rt.sizeDelta = new Vector2(100.0f * aspectRatio, 100.0f);
-        }
+    }
 
+    public void SetItem(InventoryItemData? item)
+    {
+        inventoryItemData = item;
+        IconImage.sprite = item != null ? item.sprite : null;
+        if (BgImage != null && BgSprite != null)
+        {
+            BgImage.sprite = BgSprite;
+        }
+    }
+
+    public void ClearItem()
+    {
+        inventoryItemData = null;
+        IconImage.sprite = null;
     }
 }
