@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,6 +9,9 @@ using UnityEngine.Jobs;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
+
+    public Dictionary<Object, List<InventoryItemData>> levelInventories = new Dictionary<Object, List<InventoryItemData>>();
+
 
     private const int INVENTORY_SIZE = 9;
     private const int MASK_SLOTS = 4;
@@ -37,6 +41,26 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    public void ReloadLevelInventory(string levelName)
+    {
+        ClearInventory();
+        foreach (var key in levelInventories.Keys.ToList())
+        {
+            if (key.name == levelName)
+            {
+                List<InventoryItemData> itemsToLoad = levelInventories[key];
+                InventoryItems = new InventoryItem[INVENTORY_SIZE];
+                foreach (var itemData in itemsToLoad)
+                {
+                    AddItem(itemData);
+                }
+                Debug.LogFormat("InventoryManager: Reloaded inventory for level {0} with {1} items.", levelName, itemsToLoad.Count);
+                return;
+            }
+        }
+        Debug.LogFormat("InventoryManager: No saved inventory for level {0}.", levelName);
+    }
+
     private int FindEmptySlot(SlotType slotType)
     {
         int startIndex = slotType == SlotType.MASK ? 0 : MASK_SLOTS;
@@ -50,6 +74,14 @@ public class InventoryManager : MonoBehaviour
             }
         }
         return -1; 
+    }
+
+    public void ClearInventory()
+    {
+        InventoryItems = new InventoryItem[INVENTORY_SIZE];
+        EquippedIndex = 0;
+        Debug.Log("InventoryManager: Cleared inventory.");
+        UIManager.Instance.RefreshInventory();
     }
 
     public void AddItem(InventoryItemData item)

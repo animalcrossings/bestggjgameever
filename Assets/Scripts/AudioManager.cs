@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections;
 
 
+
 public class AudioManager : MonoBehaviour
 {
     private const float _DEFAULT_AUDIO_PITCH = 1.0f;
@@ -68,6 +69,30 @@ public class AudioManager : MonoBehaviour
         musicSource.clip = backgroundMusic;
         musicSource.Play();
         musicSource.loop = true;
+    }
+
+    public void StopBackgroundMusic()
+    {
+        if(musicSource.isPlaying)
+        {
+            musicSource.Stop();
+        }
+    }
+
+    public void PauseBackgroundMusic()
+    {
+        if(musicSource.isPlaying)
+        {
+            musicSource.Pause();
+        }
+    }
+
+    public void ResumeBackgroundMusic()
+    {
+        if(!musicSource.isPlaying)
+        {
+            musicSource.Play();
+        }
     }
 
     private IEnumerator PlayAndResetPitch(AudioSource audioSource, AudioClip clip, float temporaryPitch)

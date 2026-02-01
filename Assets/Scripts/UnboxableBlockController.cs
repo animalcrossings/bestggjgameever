@@ -55,7 +55,6 @@ public class UnboxableBlockController : MoveableBlockController, IUnboxable
             });
         }
 
-
     }
 
     protected override void OnPushCallback(Vector2 targetPosition)
