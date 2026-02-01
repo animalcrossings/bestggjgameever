@@ -58,10 +58,12 @@ public class InventoryManager : MonoBehaviour
         if(item.inventoryItemType == InventoryItemType.MASK)
         {
             emptySlot = FindEmptySlot(SlotType.MASK);
+            AudioManager.Instance.PlaySound(AudioManager.Instance.gainMaskSound);
         }
         else
         {
             emptySlot = FindEmptySlot(SlotType.KEY);
+            AudioManager.Instance.PlaySound(AudioManager.Instance.keyCollectSound);
         }
 
         if (emptySlot == -1)
