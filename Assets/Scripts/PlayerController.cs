@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public Transform TargetPosition;
     public LayerMask whatStopsMovement;
+    public float teleportCooldownTime;
+    private float teleportTimer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -19,6 +21,13 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // stun the player for a moment after teleporting so they can adjust to the fact that they teleported
+        if (teleportTimer > 0)
+        {
+            teleportTimer -= Time.deltaTime;
+            return;
+        }
+
         transform.position = Vector3.MoveTowards(transform.position, TargetPosition.position, moveSpeed * Time.deltaTime);
         //print(TargetPosition.position);
         //Debug.Log("did you make it here0");
@@ -47,6 +56,14 @@ public class PlayerController : MonoBehaviour
                                 TargetPosition.position += new Vector3(moveAction.action.ReadValue<Vector2>().x, 0f, 0f);
                             }
                         }
+
+                        if (hit.collider.CompareTag("Teleporter"))
+                        {
+                            transform.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
+                            TargetPosition.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
+                            hit.collider.GetComponent<PortalController>().cameraTP();
+                            teleportTimer = teleportCooldownTime;
+                        }
                     }
                 }
             }
@@ -73,6 +90,14 @@ public class PlayerController : MonoBehaviour
                             {
                                 TargetPosition.position += new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f);
                             }
+                        }
+
+                        if (hit.collider.CompareTag("Teleporter"))
+                        {
+                            transform.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
+                            TargetPosition.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
+                            hit.collider.GetComponent<PortalController>().cameraTP();
+                            teleportTimer = teleportCooldownTime;
                         }
                     }
                 }
@@ -111,9 +136,5 @@ public class PlayerController : MonoBehaviour
             Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
             GameManager.Instance.HandleMaskPickup(collision.gameObject);
         }
-
-        double a = 0.0;
-
-        float b = (float)a;
     }
 }

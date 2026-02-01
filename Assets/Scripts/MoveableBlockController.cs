@@ -1,4 +1,8 @@
+using TMPro;
 using UnityEngine;
+using System.Collections.Generic;
+using static UnityEngine.UI.Image;
+using System.Linq;
 
 public class MoveableBlockController : MonoBehaviour
 {
@@ -32,7 +36,7 @@ public class MoveableBlockController : MonoBehaviour
 
         Vector2 newTarget = targetPos + direction;
 
-        if (!IsTileBlocked(newTarget))
+        if (!IsTileBlocked(newTarget, direction))
         {
             targetPos = newTarget;
             isMoving = true;
@@ -41,9 +45,37 @@ public class MoveableBlockController : MonoBehaviour
         return false; 
     }
 
-    bool IsTileBlocked(Vector2 pos)
+    bool IsTileBlocked(Vector2 pos, Vector2 dir)
     {
-        return Physics2D.OverlapCircle(pos, 0.2f, whatStopsMovement);
+        if (!Physics2D.OverlapCircle(pos, 0.2f, whatStopsMovement)){
+            return false;
+        }
+
+        //RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, .5f, whatStopsMovement);
+        RaycastHit2D[] hitsList = Physics2D.RaycastAll(transform.position, dir, .5f);
+        foreach (RaycastHit2D hit in hitsList)
+        {
+            if (hit.collider.CompareTag("Teleporter"))
+            {
+                transform.position = hit.collider.GetComponent<PortalController>().blockTPblock.transform.position;
+                targetPos = hit.collider.GetComponent<PortalController>().blockTPblock.transform.position;
+                return true;
+            }
+            //if (hit.collider != null)
+            //{
+            //    print("here?");
+            //    print(hit.collider.tag);
+            //    if (hit.collider.CompareTag("Teleporter"))
+            //    {
+            //        print("here???");
+            //        transform.position = hit.collider.GetComponent<PortalController>().blockTPblock.transform.position;
+            //        targetPos = hit.collider.GetComponent<PortalController>().blockTPblock.transform.position;
+            //    }
+            //    return true;
+            //}
+        }
+        return true;
+
     }
 
 }
