@@ -90,7 +90,7 @@ public class KitsuneController : MonoBehaviour
         else if (collision.gameObject.CompareTag("Mask"))
         {
             Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
-            GameManager.Instance.HandleMaskPickup(collision.gameObject);
+            GameManager.Instance.HandleItemPickup(collision.gameObject);
         }
     }
 }
