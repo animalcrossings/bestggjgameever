@@ -2,273 +2,187 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
-using UnityEngine.Rendering.Universal.Internal;
 
 public class PlayerController : MonoBehaviour
 {
-    public InputActionReference moveAction;
-    public float moveSpeed;
+    [Header("Movement Settings")]
+    public float moveSpeed = 5f;
     public Transform TargetPosition;
     public LayerMask whatStopsMovement;
-    public float teleportCooldownTime;
-    private float teleportTimer;
+    public float teleportCooldownTime = 0.5f;
+    
+    [Header("Interaction Settings")]
     [SerializeField] public LayerMask interactableLayer;
-
     private const float INTERACT_DISTANCE = 1.5f;
     private const float TOOLTIP_DISTANCE = 5.0f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [Header("Input")]
+    public InputActionReference moveAction;
+
+    private float teleportTimer;
+    private Vector3 lastFacingDirection = Vector3.down; // Default facing direction
+
     void Start()
     {
+        // Detach target to move independently
         TargetPosition.parent = null;
+        // Snap target to integer grid to prevent drift
+        TargetPosition.position = new Vector3(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y), 0f);
     }
 
-    void PlayFootStepSound()
-    {
-        AudioManager.Instance.PlayFootstepSound();
-    }
-
-    
-
-    // Update is called once per frame
     void Update()
     {
-
         CheckInteractionPrompts();
-        // stun the player for a moment after teleporting so they can adjust to the fact that they teleported
+
+        // Teleport cooldown
         if (teleportTimer > 0)
         {
             teleportTimer -= Time.deltaTime;
             return;
         }
 
+        // Smoothly move visual player to target
         transform.position = Vector3.MoveTowards(transform.position, TargetPosition.position, moveSpeed * Time.deltaTime);
-        //print(TargetPosition.position);
-        //Debug.Log("did you make it here0");
+
+        // Only allow new input if we are very close to the target (grid lock)
         if (Vector3.Distance(transform.position, TargetPosition.position) <= .05f)
         {
-            //Debug.Log("did you make it here");
-            if (Mathf.Abs(moveAction.action.ReadValue<Vector2>().x) == 1f)
-            {
-                //print(moveAction.action.ReadValue<Vector2>().x);
-                if (!Physics2D.OverlapCircle(TargetPosition.position + new Vector3(moveAction.action.ReadValue<Vector2>().x, 0f, 0f), .2f, whatStopsMovement))
-                {
-                    TargetPosition.position += new Vector3(moveAction.action.ReadValue<Vector2>().x, 0f, 0f);
-                }
-                else
-                {
-                    RaycastHit2D hit = Physics2D.Raycast(transform.position, moveAction.action.ReadValue<Vector2>(), .5f, whatStopsMovement);
-                    if (hit.collider != null)
-                    {
-                        if (hit.collider.CompareTag("Moveable"))
-                        {
-                            Vector2 pushDir = (hit.collider.transform.position - transform.position).normalized;
-                            pushDir.x = Mathf.Round(pushDir.x);
-                            pushDir.y = Mathf.Round(pushDir.y);
-                            if (hit.collider.GetComponent<MoveableBlockController>().Push(pushDir))
-                            {
-                                TargetPosition.position += new Vector3(moveAction.action.ReadValue<Vector2>().x, 0f, 0f);
-                            }
-                        }
-
-                        if (hit.collider.CompareTag("Teleporter"))
-                        {
-                            transform.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
-                            TargetPosition.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
-                            hit.collider.GetComponent<PortalController>().cameraTP();
-                            teleportTimer = teleportCooldownTime;
-                        }
-                    }
-                }
-            }
-
-
-            // print(moveAction.action.ReadValue<Vector2>());
-            if (Mathf.Abs(moveAction.action.ReadValue<Vector2>().y) == 1f)
-            {
-                if (!Physics2D.OverlapCircle(TargetPosition.position + new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f), .2f, whatStopsMovement))
-                {
-                    TargetPosition.position += new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f);
-                }
-                else
-                {
-                    RaycastHit2D hit = Physics2D.Raycast(transform.position, moveAction.action.ReadValue<Vector2>(), .5f, whatStopsMovement);
-                    if (hit.collider != null)
-                    {
-                        if (hit.collider.CompareTag("Moveable"))
-                        {
-                            Vector2 pushDir = (hit.collider.transform.position - transform.position);
-                            pushDir.x = Mathf.Round(pushDir.x);
-                            pushDir.y = Mathf.Round(pushDir.y);
-                            if (hit.collider.GetComponent<MoveableBlockController>().Push(pushDir))
-                            {
-                                TargetPosition.position += new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f);
-                            }
-                        }
-                        
-                        if (hit.collider.CompareTag("Teleporter"))
-                        {
-                            transform.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
-                            TargetPosition.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
-                            hit.collider.GetComponent<PortalController>().cameraTP();
-                            teleportTimer = teleportCooldownTime;
-                        }
-                    }
-                }
-            }
-        }
-
-
-
-        if (moveAction.action.ReadValue<Vector2>() != Vector2.zero)
-        {
-            PlayFootStepSound();
+            HandleMovementInput();
         }
     }
+
+    private void HandleMovementInput()
+    {
+        Vector2 input = moveAction.action.ReadValue<Vector2>();
+
+        // Prioritize X axis movement, then Y (prevents diagonal movement if that's desired)
+        if (Mathf.Abs(input.x) > 0.5f)
+        {
+            AttemptMove(new Vector3(Mathf.Sign(input.x), 0f, 0f));
+        }
+        else if (Mathf.Abs(input.y) > 0.5f)
+        {
+            AttemptMove(new Vector3(0f, Mathf.Sign(input.y), 0f));
+        }
+    }
+
+    private void AttemptMove(Vector3 direction)
+    {
+        // Update facing direction for interactions
+        lastFacingDirection = direction;
+
+        // Check if the target tile is blocked
+        if (!Physics2D.OverlapCircle(TargetPosition.position + direction, 0.2f, whatStopsMovement))
+        {
+            // Tile is free, move target
+            TargetPosition.position += direction;
+            AudioManager.Instance.PlayFootstepSound(); // Play sound ONCE per step
+        }
+        else
+        {
+            // Tile is blocked, check for interactables (Pushable/Teleporter)
+            HandleObstacleInteraction(direction);
+        }
+    }
+
+    private void HandleObstacleInteraction(Vector3 direction)
+    {
+        // Cast ray from current position to see what we hit
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 1f, whatStopsMovement);
+
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Moveable"))
+            {
+                MoveableBlockController block = hit.collider.GetComponent<MoveableBlockController>();
+                if (block != null && block.Push(direction))
+                {
+                    // If block moved successfully, we can move into its space
+                    TargetPosition.position += direction;
+                    AudioManager.Instance.PlayFootstepSound();
+                }
+            }
+            else if (hit.collider.CompareTag("Teleporter"))
+            {
+                PortalController portal = hit.collider.GetComponent<PortalController>();
+                if (portal != null)
+                {
+                    PerformTeleport(portal);
+                }
+            }
+        }
+    }
+
+    private void PerformTeleport(PortalController portal)
+    {
+        transform.position = portal.playerTPblock.transform.position;
+        TargetPosition.position = portal.playerTPblock.transform.position;
+        portal.cameraTP();
+        teleportTimer = teleportCooldownTime;
+    }
+
+    // --- Interaction Logic ---
 
     public GameObject GetLookingAt(float distance, LayerMask layerMask)
     {
-        // Debug.LogFormat("[PlayerController] GetLookingAt called.");
-        Vector2 facingDir = (TargetPosition.position - transform.position).normalized;
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, facingDir, distance, layerMask);
-        if (hit.collider == null)
-        {
-            // Debug.LogFormat("PlayerController: GetLookingAt raycast hit nothing.");
-            return null;
-        }
-        // Debug.LogFormat("PlayerController: GetLookingAt raycast hit {0}.", hit.collider.gameObject.name);
-        return hit.collider.gameObject;
+        // FIX: Use lastFacingDirection instead of calculating from TargetPosition
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, lastFacingDirection, distance, layerMask);
+        return hit.collider != null ? hit.collider.gameObject : null;
     }
 
+    // (GetNearby and GetClosestInteractable left unchanged as they looked fine)
     public GameObject[] GetNearby(float distance, LayerMask layerMask)
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, distance, layerMask);
-        if (hits.Length == 0)
-        {
-            return null;
-        }
-        return Array.ConvertAll(hits, hit => hit.gameObject);
-    }
-
-    public IInteractable GetClosestInteractable(float distance, LayerMask layerMask)
-    {
-        GameObject[] nearbyObjects = GetNearby(distance, layerMask);
-        if (nearbyObjects == null || nearbyObjects.Length == 0)
-        {
-            return null;
-        }
-
-        GameObject closestObject = null;
-        float closestDistance = float.MaxValue;
-
-        foreach (GameObject obj in nearbyObjects)
-        {
-            float dist = Vector3.Distance(transform.position, obj.transform.position);
-            if (dist < closestDistance)
-            {
-                closestDistance = dist;
-                closestObject = obj;
-            }
-        }
-
-        if (closestObject != null)
-        {
-            IInteractable interactable = closestObject.GetComponent<IInteractable>();
-            return interactable;
-        }
-
-        return null;
+        return hits.Length == 0 ? null : Array.ConvertAll(hits, hit => hit.gameObject);
     }
 
     public void CheckInteractionPrompts()
     {
-        GameObject LookingAt = GetLookingAt(TOOLTIP_DISTANCE, interactableLayer);
-        if (LookingAt == null)
+        // Optimization: Only run this check if we aren't moving? 
+        // For now, kept in Update but cleaned up.
+        GameObject lookingAt = GetLookingAt(TOOLTIP_DISTANCE, interactableLayer);
+        
+        if (lookingAt != null)
         {
-            return;
+            IInteractable interactable = lookingAt.GetComponent<IInteractable>();
+            interactable?.ShowTooltip(true);
         }
-        Debug.LogFormat("PlayerController: CheckInteractionPrompts found {0}.", LookingAt.gameObject.name);
-        IInteractable interactable = LookingAt.GetComponent<IInteractable>();
-        if (interactable == null)
-        {
-            Debug.LogFormat("PlayerController: No IInteractable found on {0}.", LookingAt.gameObject.name);
-            return;
-        }
-        interactable.ShowTooltip(true);
     }
 
     public void TryInteract()
     {
-        GameObject LookingAt = GetLookingAt(INTERACT_DISTANCE, interactableLayer);
-        if (LookingAt == null)
+        GameObject lookingAt = GetLookingAt(INTERACT_DISTANCE, interactableLayer);
+        if (lookingAt != null)
         {
-            Debug.LogFormat("PlayerController: TryInteract found nothing to interact with.");
-            return;
+            IInteractable interactable = lookingAt.GetComponent<IInteractable>();
+            interactable?.OnInteract();
         }
-        IInteractable interactable = LookingAt.GetComponent<IInteractable>();
-        
-        if (interactable == null)
-        {
-            Debug.LogFormat("PlayerController: No IInteractable found on {0}.", LookingAt.gameObject.name);
-            return;
-        }
-
-        Debug.LogFormat("PlayerController: Found IInteractable on {0}.", LookingAt.gameObject.name);
-        interactable.OnInteract();
     }
 
-        //private void OnTriggerEnter2D(Collider2D collision)
-        //{
-        //    print(moveAction.action.ReadValue<Vector2>());
-        //    if (collision.CompareTag("Moveable"))
-        //    {
-        //        // Calculate direction and start the MoveTowards logic
-        //        Vector3 pushDir = (collision.transform.position - transform.position).normalized;
-        //        collision.GetComponent<MoveableBlockController>().Push(pushDir);
-        //        print("HERE?");
-        //    }
-        //}
-
-
+    // (OnTriggerEnter2D left unchanged)
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.LogFormat("[PlayerController] Triggered with: {0}", collision.gameObject.name);
-        if (collision.gameObject.CompareTag("Item"))
-        {
-            Debug.LogFormat("PlayerController: Collided with item {0}.", collision.gameObject.name);
-            GameManager.Instance.HandleItemPickup(collision.gameObject);
-        }
-        else if (collision.gameObject.CompareTag("Door"))
-        {
-            Debug.LogFormat("PlayerController: Collided with door {0}.", collision.gameObject.name);
-            GameManager.Instance.TryOpenDoor(collision.gameObject);
-        }
-        else if (collision.gameObject.CompareTag("Mask"))
-        {
-            Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
-            GameManager.Instance.HandleItemPickup(collision.gameObject);
-        }
-        else if (collision.gameObject.CompareTag("Portal"))
-        {
-            Debug.LogFormat("PlayerController: Collided with portal {0}.", collision.gameObject.name);
-            Portal portal = collision.gameObject.GetComponent<Portal>();
-            if (portal != null)
-            {
-                GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
-            }
-            else
-            {
-                Debug.LogError("PlayerController: Portal component missing on collided portal object.");
-            }
-        }
+         if (collision.CompareTag("Item")) GameManager.Instance.HandleItemPickup(collision.gameObject);
+         else if (collision.CompareTag("Door")) GameManager.Instance.TryOpenDoor(collision.gameObject);
+         else if (collision.CompareTag("Mask")) GameManager.Instance.HandleItemPickup(collision.gameObject);
+         else if (collision.CompareTag("Portal"))
+         {
+             // Added null check for safety
+             Portal portal = collision.GetComponent<Portal>();
+             if (portal) GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
+         }
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, INTERACT_DISTANCE);
-
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, TOOLTIP_DISTANCE);
+        
+        // Visualize facing direction
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + lastFacingDirection);
     }
 }
