@@ -144,37 +144,4 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance.RefreshInventory();
     }
 
-
-
-    public void OnCycle(InputAction.CallbackContext context)
-    {
-        Debug.LogFormat("InventoryManager: OnCycle triggered with value {0}.", context.ReadValue<float>());
-        // Only run on 'performed' to avoid double firing
-        if (!context.performed) return;
-
-        // Get the value (-1 or 1)
-        float value = context.ReadValue<float>();
-
-        // Convert to integer direction (1 for Next, -1 for Previous)
-        int direction = value > 0 ? 1 : -1;
-
-        Debug.LogFormat("InventoryManager: Cycling inventory in direction {0}.", direction);
-
-        switch (direction)
-        {
-            case 1:
-                EquipNext();
-                break;
-            case -1:
-                EquipPrevious();
-                break;
-            default:
-                Debug.LogErrorFormat("InventoryManager: Invalid cycle direction {0}.", direction);
-                break;
-        }
-    }
-
-
-
-
 }
