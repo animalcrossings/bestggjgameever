@@ -10,6 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8356e4e519574902b442d5a9d660521, type: 3}
+<<<<<<<< HEAD:Assets/Data/DoorBlue.asset
+  m_Name: DoorBlue
+  m_EditorClassIdentifier: Assembly-CSharp::DoorData
+  lockedSprite: {fileID: -1731366001, guid: b9a2c02231e894a988aa9b65db3cb62c, type: 3}
+  unlockedSprite: {fileID: 8735229748995164117, guid: 7e24124918c9a9a4a80f288639c7f9a1, type: 3}
+  key: 3
+========
   m_Name: BlueDoor
   m_EditorClassIdentifier: Assembly-CSharp::DoorData
   key: {fileID: 11400000, guid: 427d5f9318e0649db97d2dad8f9a76aa, type: 2}
+<<<<<<< HEAD
+>>>>>>>> master:Assets/Data/BlueDoor.asset
+=======
+>>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8:Assets/Data/BlueDoor.asset
+>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8

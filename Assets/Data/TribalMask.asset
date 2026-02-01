@@ -9,6 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< HEAD
+<<<<<<< HEAD:Assets/Data/AnotherMask.asset
+=======
+<<<<<<<< HEAD:Assets/Data/AnotherMask.asset
+>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8
+  m_Script: {fileID: 11500000, guid: 9839dd0f980d64a2d9025d1c36b5c681, type: 3}
+  m_Name: AnotherMask
+  m_EditorClassIdentifier: Assembly-CSharp::MaskData
+  displayName: Kitsune Mask
+  sprite: {fileID: 2117992150455102247, guid: 95e8ced3a9289b64b825ae36ee0a3ead, type: 3}
+<<<<<<< HEAD
+=======
+=======
+========
+>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8
   m_Script: {fileID: 11500000, guid: 55221cbb4baef446baf7681f0a0486f2, type: 3}
   m_Name: TribalMask
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
@@ -17,3 +32,8 @@ MonoBehaviour:
   sprite: {fileID: -4700203457256335943, guid: 84210fbdfbe934d5f81972e2daefca6e, type: 3}
   keepBetweenLevels: 1
   inventoryItemType: 1
+<<<<<<< HEAD
+>>>>>>> master:Assets/Data/TribalMask.asset
+=======
+>>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8:Assets/Data/TribalMask.asset
+>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8

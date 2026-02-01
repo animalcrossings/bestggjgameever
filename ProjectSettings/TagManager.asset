@@ -8,6 +8,7 @@ TagManager:
   - Door
   - Item
   - Mask
+  - Teleporter
   layers:
   - Default
   - TransparentFX
@@ -27,7 +28,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - developer_sees
   - 
   - 
   - 
