@@ -24,8 +24,15 @@ public class MoveableBlockController : MonoBehaviour
             // Snap to final grid
             transform.position = targetPos;
             isMoving = false;
+            OnPushCallback(targetPos);
         }
     }
+
+    protected virtual void OnPushCallback(Vector2 targetPosition)
+    {
+        return;
+    }
+
     public bool Push(Vector2 direction)
     {
         if (isMoving) return false;
