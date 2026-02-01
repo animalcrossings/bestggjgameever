@@ -28,8 +28,15 @@ public class MoveableBlockController : MonoBehaviour
             // Snap to final grid
             transform.position = targetPos;
             isMoving = false;
+            OnPushCallback(targetPos);
         }
     }
+
+    protected virtual void OnPushCallback(Vector2 targetPosition)
+    {
+        return;
+    }
+
     public bool Push(Vector2 direction)
     {
         if (isMoving) return false;
@@ -76,6 +83,22 @@ public class MoveableBlockController : MonoBehaviour
         }
         return true;
 
+    }
+
+    // Called by Portal to force block to stop at position
+    public void ForceStopAt(Vector3 position)
+    {
+        targetPos = position;
+        transform.position = position;
+        isMoving = false;
+    }
+
+    // Check if block can be teleported (optional - for special blocks)
+    public bool CanBeTeleported()
+    {
+        // Add custom logic here if some blocks shouldn't be teleportable
+        // Example: heavy blocks, frozen blocks, etc.
+        return true;
     }
 
 }

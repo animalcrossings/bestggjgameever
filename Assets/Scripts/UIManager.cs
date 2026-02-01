@@ -2,16 +2,18 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
     [Header("Inventory Panels")]
-    [SerializeField] private GameObject masksPanel;
-    [SerializeField] private GameObject itemsPanel;
+    [SerializeField] private GameObject inventoryPanel;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject inventorySlotPrefab;
+
+    private Dictionary<int, GameObject> inventorySlotObjects = new Dictionary<int, GameObject>();
 
 
     private void Awake()
@@ -27,53 +29,58 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void Start()
+    {
+        CreateInventorySlots();
+    }
+
+    private void CreateInventorySlots()
+    {
+        for (int i = 0; i < InventoryManager.Instance.InventoryItems.Length; i++)
+        {
+            GameObject slotObj = Instantiate(inventorySlotPrefab, inventoryPanel.transform);
+            inventorySlotObjects[i] = slotObj;
+        }
+    }
+
 
     public void RefreshInventory()
     {
-        // Logic to refresh the inventory UI panels
-        Debug.Log("[UIManager] Refreshing Inventory UI Panels.");
-
-        UpdateMasksPanel(InventoryManager.Instance.InventoryMasks);
-        UpdateItemsPanel(InventoryManager.Instance.InventoryItems);
+        UpdatePanel(InventoryManager.Instance.InventoryItems);
     }
 
-    private void UpdateMasksPanel(List<MaskData> masks)
+    private void UpdatePanel(InventoryItem[] items)
     {
         // Logic to update the masks panel UI
-        Debug.Log("[UIManager] Updating Masks Panel.");
+        Debug.Log("[UIManager] Updating Inventory Panel.");
 
-        // Clear existing UI elements
-        foreach (Transform child in masksPanel.transform)
+        for (int i = 0; i < items.Length; i++)
         {
-            Destroy(child.gameObject);
+            InventoryItem item = items[i];
+            GameObject slotObj = inventorySlotObjects[i];
+            InventorySlot slotComponent = slotObj.GetComponent<InventorySlot>();
+            if (item != null)
+            {
+                Debug.LogFormat("UIManager: Setting slot {0} to item {1}.", i, item.inventoryItemData.displayName);
+                slotComponent.SetItem(item.inventoryItemData);
+            }
+            else
+            {
+                Debug.LogFormat("UIManager: Clearing slot {0}.", i);
+                slotComponent.ClearItem();
+            }
+
+            // Highlight the equipped item
+            if (i == InventoryManager.Instance.EquippedIndex)
+            {
+                slotComponent.SetSelected(true);
+            }
+            else
+            {
+                slotComponent.SetSelected(false);
+            }
         }
 
-        // Create new UI elements for each mask
-        foreach (var mask in masks)
-        {
-            GameObject inventorySlot = Instantiate(inventorySlotPrefab, masksPanel.transform);   
-            inventorySlot.GetComponent<InventorySlot>().Setup(mask);
-        }
-
-    }
-
-    private void UpdateItemsPanel(List<ItemData> items)
-    {
-        // Logic to update the items panel UI
-        Debug.Log("[UIManager] Updating Items Panel.");
-
-        // Clear existing UI elements
-        foreach (Transform child in itemsPanel.transform)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // Create new UI elements for each item
-        foreach (var item in items)
-        {
-            GameObject inventorySlot = Instantiate(inventorySlotPrefab, itemsPanel.transform);   
-            inventorySlot.GetComponent<InventorySlot>().Setup(item);
-        }
     }
 
 }

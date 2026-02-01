@@ -20,4 +20,8 @@ MonoBehaviour:
   m_Name: BlueDoor
   m_EditorClassIdentifier: Assembly-CSharp::DoorData
   key: {fileID: 11400000, guid: 427d5f9318e0649db97d2dad8f9a76aa, type: 2}
+<<<<<<< HEAD
 >>>>>>>> master:Assets/Data/BlueDoor.asset
+=======
+>>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8:Assets/Data/BlueDoor.asset
+>>>>>>> e4c4155255f61b536e0f0af1009bb32f9c58aef8

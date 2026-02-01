@@ -2,6 +2,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class PlayerController : MonoBehaviour
     public LayerMask whatStopsMovement;
     public float teleportCooldownTime;
     private float teleportTimer;
+    [SerializeField] public LayerMask interactableLayer;
+
+    private const float INTERACT_DISTANCE = 1.5f;
+    private const float TOOLTIP_DISTANCE = 5.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -18,9 +23,18 @@ public class PlayerController : MonoBehaviour
         TargetPosition.parent = null;
     }
 
+    void PlayFootStepSound()
+    {
+        AudioManager.Instance.PlayFootstepSound();
+    }
+
+    
+
     // Update is called once per frame
     void Update()
     {
+
+        CheckInteractionPrompts();
         // stun the player for a moment after teleporting so they can adjust to the fact that they teleported
         if (teleportTimer > 0)
         {
@@ -91,7 +105,7 @@ public class PlayerController : MonoBehaviour
                                 TargetPosition.position += new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f);
                             }
                         }
-
+                        
                         if (hit.collider.CompareTag("Teleporter"))
                         {
                             transform.position = hit.collider.GetComponent<PortalController>().playerTPblock.transform.position;
@@ -103,6 +117,104 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+
+
+        if (moveAction.action.ReadValue<Vector2>() != Vector2.zero)
+        {
+            PlayFootStepSound();
+        }
+    }
+
+    public GameObject GetLookingAt(float distance, LayerMask layerMask)
+    {
+        // Debug.LogFormat("[PlayerController] GetLookingAt called.");
+        Vector2 facingDir = (TargetPosition.position - transform.position).normalized;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, facingDir, distance, layerMask);
+        if (hit.collider == null)
+        {
+            // Debug.LogFormat("PlayerController: GetLookingAt raycast hit nothing.");
+            return null;
+        }
+        // Debug.LogFormat("PlayerController: GetLookingAt raycast hit {0}.", hit.collider.gameObject.name);
+        return hit.collider.gameObject;
+    }
+
+    public GameObject[] GetNearby(float distance, LayerMask layerMask)
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, distance, layerMask);
+        if (hits.Length == 0)
+        {
+            return null;
+        }
+        return Array.ConvertAll(hits, hit => hit.gameObject);
+    }
+
+    public IInteractable GetClosestInteractable(float distance, LayerMask layerMask)
+    {
+        GameObject[] nearbyObjects = GetNearby(distance, layerMask);
+        if (nearbyObjects == null || nearbyObjects.Length == 0)
+        {
+            return null;
+        }
+
+        GameObject closestObject = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (GameObject obj in nearbyObjects)
+        {
+            float dist = Vector3.Distance(transform.position, obj.transform.position);
+            if (dist < closestDistance)
+            {
+                closestDistance = dist;
+                closestObject = obj;
+            }
+        }
+
+        if (closestObject != null)
+        {
+            IInteractable interactable = closestObject.GetComponent<IInteractable>();
+            return interactable;
+        }
+
+        return null;
+    }
+
+    public void CheckInteractionPrompts()
+    {
+        GameObject LookingAt = GetLookingAt(TOOLTIP_DISTANCE, interactableLayer);
+        if (LookingAt == null)
+        {
+            return;
+        }
+        Debug.LogFormat("PlayerController: CheckInteractionPrompts found {0}.", LookingAt.gameObject.name);
+        IInteractable interactable = LookingAt.GetComponent<IInteractable>();
+        if (interactable == null)
+        {
+            Debug.LogFormat("PlayerController: No IInteractable found on {0}.", LookingAt.gameObject.name);
+            return;
+        }
+        interactable.ShowTooltip(true);
+    }
+
+    public void TryInteract()
+    {
+        GameObject LookingAt = GetLookingAt(INTERACT_DISTANCE, interactableLayer);
+        if (LookingAt == null)
+        {
+            Debug.LogFormat("PlayerController: TryInteract found nothing to interact with.");
+            return;
+        }
+        IInteractable interactable = LookingAt.GetComponent<IInteractable>();
+        
+        if (interactable == null)
+        {
+            Debug.LogFormat("PlayerController: No IInteractable found on {0}.", LookingAt.gameObject.name);
+            return;
+        }
+
+        Debug.LogFormat("PlayerController: Found IInteractable on {0}.", LookingAt.gameObject.name);
+        interactable.OnInteract();
     }
 
         //private void OnTriggerEnter2D(Collider2D collision)
@@ -134,7 +246,29 @@ public class PlayerController : MonoBehaviour
         else if (collision.gameObject.CompareTag("Mask"))
         {
             Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
-            GameManager.Instance.HandleMaskPickup(collision.gameObject);
+            GameManager.Instance.HandleItemPickup(collision.gameObject);
         }
+        else if (collision.gameObject.CompareTag("Portal"))
+        {
+            Debug.LogFormat("PlayerController: Collided with portal {0}.", collision.gameObject.name);
+            Portal portal = collision.gameObject.GetComponent<Portal>();
+            if (portal != null)
+            {
+                GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
+            }
+            else
+            {
+                Debug.LogError("PlayerController: Portal component missing on collided portal object.");
+            }
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, INTERACT_DISTANCE);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, TOOLTIP_DISTANCE);
     }
 }
