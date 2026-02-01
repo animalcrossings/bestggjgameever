@@ -5,9 +5,7 @@ using UnityEngine;
 public class DoorData : ScriptableObject
 {
     [Header("Door Settings")]
-    public Sprite lockedSprite;
-    public Sprite unlockedSprite;
-    public ItemType key;
+    public InventoryItemData key;
     
 
 }

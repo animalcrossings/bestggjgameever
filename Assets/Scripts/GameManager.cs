@@ -17,30 +17,38 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void HandleBreakBlock(GameObject blockObject)
+    {
+        Debug.LogFormat("GameManager: Breaking block {0}.", blockObject.name);
+        if (!blockObject.TryGetComponent<BreakableBlock>(out var breakableBlock))
+        {
+            Debug.LogError("BreakableBlock component missing on block object.");
+            return;
+        }
+        // Check if the player has the required mask equipped
+        bool hasRequiredMask = InventoryManager.Instance.IsEquippedByItemId(breakableBlock.requiredMask.id);
+        if (!hasRequiredMask)
+        {
+            Debug.LogError("Player does not have the required mask equipped to break this block.");
+            return;
+        }
+        breakableBlock.BreakBlock();
+
+        AudioManager.Instance.PlaySound(AudioManager.Instance.breakBlockSound);
+    }
+
     public void HandleItemPickup(GameObject itemObject)
     {
         Debug.LogFormat("PlayerController: Picking up item {0}.", itemObject.name);
-        if (!itemObject.TryGetComponent<Item>(out var itemComponent))
+        if (!itemObject.TryGetComponent<InventoryItem>(out var itemComponent))
         {
-            Debug.LogError("Item component missing on item object.");
+            Debug.LogError("InventoryItem component missing on item object.");
             return;
         }
-        InventoryManager.Instance.AddItem(itemComponent.itemData);
+        InventoryManager.Instance.AddItem(itemComponent.inventoryItemData);
         UIManager.Instance.RefreshInventory();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.keyCollectSound);
         Destroy(itemObject);
-    }
-
-    public void HandleMaskPickup(GameObject maskObject)
-    {
-        Debug.LogFormat("PlayerController: Picking up mask {0}.", maskObject.name);
-        if (!maskObject.TryGetComponent<Mask>(out var maskComponent))
-        {
-            Debug.LogError("Mask component missing on mask object.");
-            return;
-        }
-        InventoryManager.Instance.AddMask(maskComponent.maskData);
-        UIManager.Instance.RefreshInventory();
-        Destroy(maskObject);
     }
 
     public void HandlePortalEntry(GameObject portalObject, Transform entity)
@@ -64,19 +72,19 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (!doorComponent.isLocked)
-        {
-            Debug.LogFormat("PlayerController: Door with key {0} is already unlocked.", doorComponent.doorData.key);
-            return;
-        }
+        // if (!doorComponent.isLocked)
+        // {
+        //     Debug.LogFormat("PlayerController: Door with key {0} is already unlocked.", doorComponent.doorData.key);
+        //     return;
+        // }
 
-        if (!InventoryManager.Instance.HasItemByType(doorComponent.doorData.key))
+        if (!InventoryManager.Instance.IsEquippedByItemId(doorComponent.doorData.key.id))
         {
             Debug.LogFormat("PlayerController: Missing key {0} for door.", doorComponent.doorData.key);
             return;
         }
         
-        bool useSuccess = InventoryManager.Instance.UseItemByType(doorComponent.doorData.key);
+        bool useSuccess = InventoryManager.Instance.UseItemById(doorComponent.doorData.key.id);
         if (!useSuccess)
         {
             Debug.LogError("Failed to use the key from inventory.");

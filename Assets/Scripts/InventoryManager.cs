@@ -1,13 +1,28 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.Jobs;
 
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    public List<ItemData> InventoryItems { get; private set; } = new List<ItemData>();
-    public List<MaskData> InventoryMasks { get; private set; } = new List<MaskData>();
+    private const int INVENTORY_SIZE = 9;
+    private const int MASK_SLOTS = 4;
+    private const int KEY_SLOTS = 5;
+
+    [SerializeField] public GameObject inventoryItemPrefab;
+    public InventoryItem[] InventoryItems {get; private set;} = new InventoryItem[INVENTORY_SIZE];
+
+    public int EquippedIndex {get; private set;} = 0;
+
+    enum SlotType
+    {
+        MASK,
+        KEY
+    }
 
     private void Awake()
     {
@@ -22,96 +37,144 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    public bool HasItemByType(ItemType itemType)
+    private int FindEmptySlot(SlotType slotType)
     {
-        foreach (var item in InventoryItems)
+        int startIndex = slotType == SlotType.MASK ? 0 : MASK_SLOTS;
+        int endIndex = slotType == SlotType.MASK ? MASK_SLOTS : INVENTORY_SIZE;
+
+        for (int i = startIndex; i < endIndex; i++)
         {
-            if (item.type == itemType)
+            if (InventoryItems[i] == null)
             {
-                return true;
+                return i;
             }
         }
-        return false;
+        return -1; 
     }
 
-    public bool HasMask(MaskData mask)
+    public void AddItem(InventoryItemData item)
     {
-        return InventoryMasks.Contains(mask);
-    }
-
-    public void AddItem(ItemData newItem)
-    {
-        if (newItem == null) return;
-
-        if (!InventoryItems.Contains(newItem))
+        int emptySlot = -1;
+        if(item.inventoryItemType == InventoryItemType.MASK)
         {
-            InventoryItems.Add(newItem);
-            Debug.Log($"[Inventory] Added Item: {newItem.displayName}");
+            emptySlot = FindEmptySlot(SlotType.MASK);
+        }
+        else
+        {
+            emptySlot = FindEmptySlot(SlotType.KEY);
+        }
+
+        if (emptySlot == -1)
+        {
+            Debug.LogError("InventoryManager: No empty slots available.");
             return;
         }
+
+        InventoryItem newItem = Instantiate(inventoryItemPrefab, transform).GetComponent<InventoryItem>();
+        newItem.Initialize(item);
+        InventoryItems[emptySlot] = newItem;
+
+        Debug.LogFormat("InventoryManager: Added item {0} to inventory slot {1}, InventoryItems: {2}.", item.name, emptySlot, InventoryItems[emptySlot]);
         UIManager.Instance.RefreshInventory();
     }
 
-    public void RemoveVanishableItems()
+    public void EquipItem(int index)
     {
-        InventoryItems.RemoveAll(item => !item.keepBetweenLevels);
-        Debug.Log("[Inventory] Removed vanishable items at level end.");
-
-        // Notify UI Manager to refresh item inventory if needed
+        EquippedIndex = index;
         UIManager.Instance.RefreshInventory();
     }
 
-    public bool UseItemByType(ItemType itemType)
+    public void EquipNext()
     {
-        for (int i = 0; i < InventoryItems.Count; i++)
+        EquippedIndex = (EquippedIndex + 1) % INVENTORY_SIZE;
+        UIManager.Instance.RefreshInventory();
+    }
+
+    public void EquipPrevious()
+    {
+        EquippedIndex = (EquippedIndex - 1 + INVENTORY_SIZE) % INVENTORY_SIZE;
+        UIManager.Instance.RefreshInventory();
+    }
+
+    public bool IsEquippedByItemData(InventoryItemData itemData)
+    {
+        InventoryItem? item = InventoryItems[EquippedIndex];
+        return item != null && item.CheckId(itemData.id);
+    }
+
+    public bool IsEquippedByItemId(string id)
+    {
+        InventoryItem? item = InventoryItems[EquippedIndex];
+        return item != null && item.CheckId(id);
+    }
+
+    public bool UseItemById(string id)
+    {
+        InventoryItem? item = InventoryItems[EquippedIndex];
+        if (!IsEquippedByItemId(id))
         {
-            if (InventoryItems[i].type == itemType)
-            {
-                ItemData itemToUse = InventoryItems[i];
-                InventoryItems.RemoveAt(i);
-                Debug.Log($"[Inventory] Using Item: {itemToUse.displayName}");
-                Debug.Log($"[Inventory] Item {itemToUse.displayName} has been consumed after use.");
-
-                // Notify UI Manager to refresh item inventory if needed
-                UIManager.Instance.RefreshInventory();
-                return true;
-            }
-        }
-
-        Debug.LogWarning($"[Inventory] Cannot use item of type {itemType} as it is not in inventory.");
-        UIManager.Instance.RefreshInventory();
-        return false;
-    }
-
-    public bool UseItem(ItemData item)
-    {
-        if (item == null) return false;
-
-        if (!InventoryItems.Contains(item))
-        {
-            Debug.LogWarning($"[Inventory] Cannot use item {item.displayName} as it is not in inventory.");
+            Debug.LogErrorFormat("InventoryManager: Equipped item does not match the requested id {0}.", id);
             return false;
         }
 
-        Debug.Log($"[Inventory] Using Item: {item.displayName}");
-        InventoryItems.Remove(item);
-        Debug.Log($"[Inventory] Item {item.displayName} has been consumed after use.");
+        if (item.inventoryItemData.inventoryItemType == InventoryItemType.MASK)
+        {
+            Debug.LogErrorFormat("InventoryManager: Cannot use a mask item {0}.", item.inventoryItemData.name);
+            return false;
+        }
 
+        InventoryItems[EquippedIndex] = null;
+        Debug.LogFormat("InventoryManager: Used item {0} from inventory.", id);
         UIManager.Instance.RefreshInventory();
         return true;
     }
 
-    public void AddMask(MaskData newMask)
-    {
-        if (newMask == null) return;
 
-        if (!InventoryMasks.Contains(newMask))
+    public void RemoveVanishableItems()
+    {
+        for (int i = 0; i < INVENTORY_SIZE; i++)
         {
-            InventoryMasks.Add(newMask);
-            Debug.Log($"[Inventory] Added Mask: {newMask.displayName}");
-            return;
+            InventoryItem item = InventoryItems[i];
+            if (item != null && item.DoKeepBetweenLevels() == false)
+            {
+                InventoryItems[i] = null;
+            }
         }
+        Debug.Log("[Inventory] Removed vanishable items at level end.");
         UIManager.Instance.RefreshInventory();
     }
+
+
+
+    public void OnCycle(InputAction.CallbackContext context)
+    {
+        Debug.LogFormat("InventoryManager: OnCycle triggered with value {0}.", context.ReadValue<float>());
+        // Only run on 'performed' to avoid double firing
+        if (!context.performed) return;
+
+        // Get the value (-1 or 1)
+        float value = context.ReadValue<float>();
+
+        // Convert to integer direction (1 for Next, -1 for Previous)
+        int direction = value > 0 ? 1 : -1;
+
+        Debug.LogFormat("InventoryManager: Cycling inventory in direction {0}.", direction);
+
+        switch (direction)
+        {
+            case 1:
+                EquipNext();
+                break;
+            case -1:
+                EquipPrevious();
+                break;
+            default:
+                Debug.LogErrorFormat("InventoryManager: Invalid cycle direction {0}.", direction);
+                break;
+        }
+    }
+
+
+
 
 }

@@ -1,8 +1,33 @@
+using Unity.VisualScripting;
+using UnityEditor.EditorTools;
 using UnityEngine;
+using System.Collections;
+
 
 public class AudioManager : MonoBehaviour
 {
+    private const float _DEFAULT_AUDIO_PITCH = 1.0f;
     public static AudioManager Instance { get; private set; }
+    [SerializeField] public AudioClip backgroundMusic;
+    [SerializeField] public AudioClip breakBlockSound;
+    [SerializeField] public AudioClip clickUIButtonSound;
+    [SerializeField] public AudioClip cloneSound;
+    [SerializeField] public AudioClip gainMaskSound;
+    [SerializeField] public AudioClip keyCollectSound;
+    [SerializeField] public AudioClip levelCompleteSound;
+    [SerializeField] public AudioClip moveSound;
+    [SerializeField] public AudioClip pushBlockSound;
+    [SerializeField] public AudioClip teleportSound;
+    [SerializeField] public AudioSource soundFXSource;
+    [SerializeField] public AudioSource musicSource;
+
+    [Tooltip("Minimum interval between footstep sounds in seconds.")]
+    [SerializeField] public float footstepInterval = 0.5f;
+    // pitch range for footstep sounds
+    [SerializeField] public float minFootstepPitch = 0.6f;
+    [SerializeField] public float maxFootstepPitch = 1.4f;
+
+    private float _lastFootstepTime = 0f;
 
     private void Awake()
     {
@@ -16,4 +41,47 @@ public class AudioManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void Start()
+    {
+        PlayBackgroundMusic();
+    }
+
+    public void PlaySound(AudioClip clip)
+    {
+        Debug.Log($"[AudioManager] Playing sound: {clip.name}");
+        soundFXSource.PlayOneShot(clip);
+    }
+
+    public void PlayFootstepSound()
+    {
+        if (Time.time - _lastFootstepTime >= footstepInterval)
+        {
+            float pitch = Random.Range(minFootstepPitch, maxFootstepPitch);
+            StartCoroutine(PlayAndResetPitch(soundFXSource, moveSound, pitch));
+            _lastFootstepTime = Time.time;
+        }
+    }
+
+    public void PlayBackgroundMusic()
+    {
+        musicSource.clip = backgroundMusic;
+        musicSource.Play();
+        musicSource.loop = true;
+    }
+
+    private IEnumerator PlayAndResetPitch(AudioSource audioSource, AudioClip clip, float temporaryPitch)
+    {
+        audioSource.pitch = temporaryPitch;
+        audioSource.clip = clip;
+        
+        audioSource.Play();
+
+        yield return new WaitWhile(() => audioSource.isPlaying);
+
+        audioSource.pitch = _DEFAULT_AUDIO_PITCH;
+    }
+
+
+
 }
