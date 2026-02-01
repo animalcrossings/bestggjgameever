@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55221cbb4baef446baf7681f0a0486f2, type: 3}
-  m_Name: BlueKey
+  m_Name: KeyGreen
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
-  id: blueKey
-  displayName: Blue Key
-  sprite: {fileID: -406242218, guid: b9a2c02231e894a988aa9b65db3cb62c, type: 3}
+  id: KeyGreen
+  displayName: Green Key
+  sprite: {fileID: 1304365964, guid: b9a2c02231e894a988aa9b65db3cb62c, type: 3}
   keepBetweenLevels: 0
   inventoryItemType: 0
