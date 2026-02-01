@@ -6,13 +6,14 @@ using TMPro;
 public class BreakableBlock : MonoBehaviour, IInteractable
 {
 
-    [SerializeField] public InventoryItemData requiredMask;
+    [SerializeField] public InventoryItemData requiredMask = GameManager.Instance.tribalMask;
     [SerializeField] public List<BreakableBlock> linkedBlocks;
     [SerializeField] public TextMeshPro tooltipText;
     public bool IsBreakable = true;
 
     public void Start()
     {
+        requiredMask = GameManager.Instance.tribalMask;
         tooltipText.gameObject.SetActive(false);
         tooltipText.text = String.Format("Requires {0} to break", requiredMask.displayName);
     }
