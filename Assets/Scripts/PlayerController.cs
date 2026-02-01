@@ -90,4 +90,21 @@ public class PlayerController : MonoBehaviour
         //        print("HERE?");
         //    }
         //}
+
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.LogFormat("[PlayerController] Triggered with: {0}", collision.gameObject.name);
+        if (collision.gameObject.CompareTag("Item"))
+        {
+            Debug.LogFormat("PlayerController: Collided with item {0}.", collision.gameObject.name);
+            GameManager.Instance.HandleItemPickup(collision.gameObject);
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.CompareTag("Door"))
+        {
+            Debug.LogFormat("PlayerController: Collided with door {0}.", collision.gameObject.name);
+            GameManager.Instance.TryOpenDoor(collision.gameObject);
+        }
+    }
 }
