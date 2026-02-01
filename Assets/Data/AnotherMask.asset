@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: AnotherMask
   m_EditorClassIdentifier: Assembly-CSharp::MaskData
   displayName: Kitsune Mask
-  sprite: {fileID: -4700203457256335943, guid: 84210fbdfbe934d5f81972e2daefca6e, type: 3}
+  sprite: {fileID: 2117992150455102247, guid: 95e8ced3a9289b64b825ae36ee0a3ead, type: 3}
