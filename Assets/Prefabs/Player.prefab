@@ -48,12 +48,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607e88b4b4c9a98419c15bc36df58df1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   moveSpeed: 4
   TargetPosition: {fileID: 3107464314788608126}
   whatStopsMovement:
-    serializedVersion: 2
+  - serializedVersion: 2
+    m_Bits: 512
+  - serializedVersion: 2
     m_Bits: 1024
+  teleportCooldownTime: 0.5
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  moveAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!61 &807920820108585345
 BoxCollider2D:
   m_ObjectHideFlags: 0
