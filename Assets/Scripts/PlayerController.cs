@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
             }
 
 
-            print(moveAction.action.ReadValue<Vector2>());
+            // print(moveAction.action.ReadValue<Vector2>());
             if (Mathf.Abs(moveAction.action.ReadValue<Vector2>().y) == 1f)
             {
                 if (!Physics2D.OverlapCircle(TargetPosition.position + new Vector3(0f, moveAction.action.ReadValue<Vector2>().y, 0f), .2f, whatStopsMovement))
