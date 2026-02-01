@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         transform.position = Vector3.MoveTowards(transform.position, TargetPosition.position, moveSpeed * Time.deltaTime);
-        print(TargetPosition.position);
+        // print(TargetPosition.position);
         //Debug.Log("did you make it here0");
         if (Vector3.Distance(transform.position, TargetPosition.position) <= .05f)
         {
@@ -39,5 +39,23 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-    }   
+    }
+
+
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.LogFormat("[PlayerController] Triggered with: {0}", collision.gameObject.name);
+        if (collision.gameObject.CompareTag("Item"))
+        {
+            Debug.LogFormat("PlayerController: Collided with item {0}.", collision.gameObject.name);
+            GameManager.Instance.HandleItemPickup(collision.gameObject);
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.CompareTag("Door"))
+        {
+            Debug.LogFormat("PlayerController: Collided with door {0}.", collision.gameObject.name);
+            GameManager.Instance.TryOpenDoor(collision.gameObject);
+        }
+    }
 }
