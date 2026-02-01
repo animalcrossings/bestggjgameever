@@ -58,24 +58,24 @@ public class UnboxableBlockController : MoveableBlockController, IUnboxable
 
     }
 
-    protected override void OnPushCallback(Vector2 targetPosition)
-    {
-        // Get the block at the target position
-        Collider2D hitCollider = Physics2D.OverlapCircle(targetPosition, 0.2f, groundTileLayer);
-        if (hitCollider == null)
-        {
-            // Debug.LogFormat("UnboxableBlock: Block pushed to empty tile at {0}, no unboxing.", targetPosition);
-            return;
-        }
+    // protected override void OnPushCallback(Vector2 targetPosition)
+    // {
+    //     // Get the block at the target position
+    //     Collider2D hitCollider = Physics2D.OverlapCircle(targetPosition, 0.2f, groundTileLayer);
+    //     if (hitCollider == null)
+    //     {
+    //         // Debug.LogFormat("UnboxableBlock: Block pushed to empty tile at {0}, no unboxing.", targetPosition);
+    //         return;
+    //     }
 
-        UnboxStation block = hitCollider.GetComponent<UnboxStation>();
-        if (block != null && block.unboxStationData.id == unboxStationData.id)
-        {
-            // Debug.LogFormat("UnboxableBlock: Block pushed onto unbox station at {0}, unboxing.", targetPosition);
-            Unbox();   
-        }
+    //     UnboxStation block = hitCollider.GetComponent<UnboxStation>();
+    //     if (block != null && block.unboxStationData.id == unboxStationData.id)
+    //     {
+    //         // Debug.LogFormat("UnboxableBlock: Block pushed onto unbox station at {0}, unboxing.", targetPosition);
+    //         Unbox();   
+    //     }
         
-    }
+    // }
 
     public void Unbox()
     {

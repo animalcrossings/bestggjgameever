@@ -166,12 +166,12 @@ public class PlayerController : MonoBehaviour
          if (collision.CompareTag("Item")) GameManager.Instance.HandleItemPickup(collision.gameObject);
          else if (collision.CompareTag("Door")) GameManager.Instance.TryOpenDoor(collision.gameObject);
          else if (collision.CompareTag("Mask")) GameManager.Instance.HandleItemPickup(collision.gameObject);
-         else if (collision.CompareTag("Portal"))
-         {
-             // Added null check for safety
-             Portal portal = collision.GetComponent<Portal>();
-             if (portal) GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
-         }
+        //  else if (collision.CompareTag("Portal"))
+        //  {
+        //      // Added null check for safety
+        //      Portal portal = collision.GetComponent<Portal>();
+        //      if (portal) GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
+        //  }
     }
 
     void OnDrawGizmosSelected()
