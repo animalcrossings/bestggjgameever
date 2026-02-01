@@ -3,11 +3,19 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuController : MonoBehaviour
 {
-    public GameObject settingsPanel; 
-    // 1. Start 
-    public void PlayGame()
+    public GameObject settingsPanel; //
+    public GameObject menuPanel;     
+    public GameObject narratorPanel; 
+
+    // 1. Start ：
+    public void ShowNarrator()
     {
-        SceneManager.LoadScene("Level 1");
+        menuPanel.SetActive(false);     
+        narratorPanel.SetActive(true);  
+    }
+    public void FinalStartGame()
+    {
+        SceneManager.LoadScene("Level 1"); //
     }
 
     // 2. Settings 
