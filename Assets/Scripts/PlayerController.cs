@@ -236,6 +236,7 @@ public class PlayerController : MonoBehaviour
                 Debug.LogError("PlayerController: Portal component missing on collided portal object.");
             }
         }
+    }
 
     void OnDrawGizmosSelected()
     {
