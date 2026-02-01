@@ -223,7 +223,19 @@ public class PlayerController : MonoBehaviour
             Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
             GameManager.Instance.HandleItemPickup(collision.gameObject);
         }
-    }
+        else if (collision.gameObject.CompareTag("Portal"))
+        {
+            Debug.LogFormat("PlayerController: Collided with portal {0}.", collision.gameObject.name);
+            Portal portal = collision.gameObject.GetComponent<Portal>();
+            if (portal != null)
+            {
+                GameManager.Instance.HandlePortalEntry(collision.gameObject, transform);
+            }
+            else
+            {
+                Debug.LogError("PlayerController: Portal component missing on collided portal object.");
+            }
+        }
 
     void OnDrawGizmosSelected()
     {

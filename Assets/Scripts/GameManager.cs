@@ -1,5 +1,3 @@
-using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -53,6 +51,18 @@ public class GameManager : MonoBehaviour
         Destroy(itemObject);
     }
 
+    public void HandlePortalEntry(GameObject portalObject, Transform entity)
+    {
+        if (!portalObject.TryGetComponent<Portal>(out var portalComponent))
+        {
+            Debug.LogError("Portal component missing on portal object.");
+            return;
+        }
+
+        Debug.Log($"GameManager: Entity '{entity.name} Entering portal {portalObject.name}.");
+        portalComponent.Teleport(entity);
+    }
+
     public void TryOpenDoor(GameObject doorObject)
     {
         // Does the player have the key?
@@ -83,4 +93,8 @@ public class GameManager : MonoBehaviour
         Debug.LogFormat("PlayerController: Opening door with {0}.", doorComponent.doorData.key);
         doorComponent.OpenDoor();
     }
+
+
+
+
 }

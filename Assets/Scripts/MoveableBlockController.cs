@@ -46,4 +46,20 @@ public class MoveableBlockController : MonoBehaviour
         return Physics2D.OverlapCircle(pos, 0.2f, whatStopsMovement);
     }
 
+    // Called by Portal to force block to stop at position
+    public void ForceStopAt(Vector3 position)
+    {
+        targetPos = position;
+        transform.position = position;
+        isMoving = false;
+    }
+
+    // Check if block can be teleported (optional - for special blocks)
+    public bool CanBeTeleported()
+    {
+        // Add custom logic here if some blocks shouldn't be teleportable
+        // Example: heavy blocks, frozen blocks, etc.
+        return true;
+    }
+
 }
