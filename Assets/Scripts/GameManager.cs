@@ -32,7 +32,12 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Player does not have the required mask equipped to break this block.");
             return;
         }
-        breakableBlock.BreakBlock();
+        bool isSuccess = breakableBlock.BreakBlock();
+
+        if (!isSuccess)
+        {
+            return;
+        }
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.breakBlockSound);
     }

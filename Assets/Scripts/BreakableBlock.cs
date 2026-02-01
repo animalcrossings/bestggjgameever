@@ -9,6 +9,7 @@ public class BreakableBlock : MonoBehaviour, IInteractable
     [SerializeField] public InventoryItemData requiredMask;
     [SerializeField] public List<BreakableBlock> linkedBlocks;
     [SerializeField] public TextMeshPro tooltipText;
+    public bool IsBreakable = true;
 
     public void Start()
     {
@@ -16,8 +17,12 @@ public class BreakableBlock : MonoBehaviour, IInteractable
         tooltipText.text = String.Format("Requires {0} to break", requiredMask.displayName);
     }
 
-    public String GetTooltipText()
-    {
+    public String GetTooltipText(){
+    
+        if (!IsBreakable) {
+            return "";
+        }
+
         if (InventoryManager.Instance.IsEquippedByItemData(requiredMask))
         {
             return "Press E to break";
@@ -28,8 +33,12 @@ public class BreakableBlock : MonoBehaviour, IInteractable
         }
     }
 
-    public void BreakBlock()
+    public bool BreakBlock()
     {
+        if (!IsBreakable)
+        {
+            return false;
+        }
         Destroy(gameObject);
 
         // one layer of linked blocks
@@ -41,6 +50,7 @@ public class BreakableBlock : MonoBehaviour, IInteractable
                 Destroy(linkedBlock.gameObject);
             }
         }
+		return true;
     }
 
     public void OnInteract()
