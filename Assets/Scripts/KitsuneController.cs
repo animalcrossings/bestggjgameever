@@ -7,6 +7,10 @@ public class KitsuneController : MonoBehaviour
     public float moveSpeed;
     public Transform TargetPosition;
     public LayerMask whatStopsMovement;
+    public InventoryItemData requiredMask;
+    private bool isBeingControlled = false;
+    private float LastControlTime = 0f;
+    public float ControlSoundCooldown = 1.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -16,7 +20,26 @@ public class KitsuneController : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {   
+
+        if (!InventoryManager.Instance.IsEquippedByItemData(requiredMask))
+        {
+            isBeingControlled = false;
+            return;
+        }
+
+        if (!isBeingControlled)
+        {
+            // we started controlling the kitsune
+            isBeingControlled = true;
+            if (Time.time - LastControlTime >= ControlSoundCooldown)
+            {
+                AudioManager.Instance.PlaySound(AudioManager.Instance.cloneSound);
+                LastControlTime = Time.time;
+            }
+        }
+
+
         transform.position = Vector3.MoveTowards(transform.position, TargetPosition.position, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, TargetPosition.position) <= .05f)
         {
