@@ -10,6 +10,8 @@ public class InventorySlot : MonoBehaviour
     public Image IconImage;    
     public bool isMask;
 
+
+
     public void Setup(ItemData item)
     {
         itemData = item;
@@ -22,5 +24,25 @@ public class InventorySlot : MonoBehaviour
         maskData = mask;
         isMask = true;
         IconImage.sprite = mask.sprite;
+
+        // Get sizes from mask.sprite,
+        // Align the RectTransform accordingly
+
+        int height, width;
+        height = mask.sprite.texture.height;
+        width = mask.sprite.texture.width;
+
+        float aspectRatio = (float)width / height;
+
+        RectTransform rt = IconImage.GetComponent<RectTransform>();
+        if (aspectRatio >= 1.0f)
+        {
+            rt.sizeDelta = new Vector2(100.0f, 100.0f / aspectRatio);
+        }
+        else
+        {
+            rt.sizeDelta = new Vector2(100.0f * aspectRatio, 100.0f);
+        }
+
     }
 }

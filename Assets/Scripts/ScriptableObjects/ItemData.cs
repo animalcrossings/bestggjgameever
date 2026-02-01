@@ -7,13 +7,14 @@ public class ItemData : ScriptableObject
     public string displayName;
     public Sprite sprite;
     public ItemType type;
-
     public bool keepBetweenLevels; 
 }
 
 public enum ItemType
 {
+    OTHER,
     RED_KEY,
+    GREEN_KEY,
     BLUE_KEY,
-    OTHER
+    YELLOW_KEY
 }

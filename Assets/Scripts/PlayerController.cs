@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -50,12 +51,20 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogFormat("PlayerController: Collided with item {0}.", collision.gameObject.name);
             GameManager.Instance.HandleItemPickup(collision.gameObject);
-            Destroy(collision.gameObject);
         }
         else if (collision.gameObject.CompareTag("Door"))
         {
             Debug.LogFormat("PlayerController: Collided with door {0}.", collision.gameObject.name);
             GameManager.Instance.TryOpenDoor(collision.gameObject);
         }
+        else if (collision.gameObject.CompareTag("Mask"))
+        {
+            Debug.LogFormat("PlayerController: Collided with mask {0}.", collision.gameObject.name);
+            GameManager.Instance.HandleMaskPickup(collision.gameObject);
+        }
+
+        double a = 0.0;
+
+        float b = (float)a;
     }
 }

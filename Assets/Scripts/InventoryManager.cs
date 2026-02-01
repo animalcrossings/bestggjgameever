@@ -49,6 +49,7 @@ public class InventoryManager : MonoBehaviour
             Debug.Log($"[Inventory] Added Item: {newItem.displayName}");
             return;
         }
+        UIManager.Instance.RefreshInventory();
     }
 
     public void RemoveVanishableItems()
@@ -58,6 +59,28 @@ public class InventoryManager : MonoBehaviour
 
         // Notify UI Manager to refresh item inventory if needed
         UIManager.Instance.RefreshInventory();
+    }
+
+    public bool UseItemByType(ItemType itemType)
+    {
+        for (int i = 0; i < InventoryItems.Count; i++)
+        {
+            if (InventoryItems[i].type == itemType)
+            {
+                ItemData itemToUse = InventoryItems[i];
+                InventoryItems.RemoveAt(i);
+                Debug.Log($"[Inventory] Using Item: {itemToUse.displayName}");
+                Debug.Log($"[Inventory] Item {itemToUse.displayName} has been consumed after use.");
+
+                // Notify UI Manager to refresh item inventory if needed
+                UIManager.Instance.RefreshInventory();
+                return true;
+            }
+        }
+
+        Debug.LogWarning($"[Inventory] Cannot use item of type {itemType} as it is not in inventory.");
+        UIManager.Instance.RefreshInventory();
+        return false;
     }
 
     public bool UseItem(ItemData item)
@@ -74,7 +97,7 @@ public class InventoryManager : MonoBehaviour
         InventoryItems.Remove(item);
         Debug.Log($"[Inventory] Item {item.displayName} has been consumed after use.");
 
-        // Notify UI Manager to refresh item inventory if needed
+        UIManager.Instance.RefreshInventory();
         return true;
     }
 
@@ -88,6 +111,7 @@ public class InventoryManager : MonoBehaviour
             Debug.Log($"[Inventory] Added Mask: {newMask.displayName}");
             return;
         }
+        UIManager.Instance.RefreshInventory();
     }
 
 }

@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -26,6 +28,21 @@ public class GameManager : MonoBehaviour
             return;
         }
         InventoryManager.Instance.AddItem(itemComponent.itemData);
+        UIManager.Instance.RefreshInventory();
+        Destroy(itemObject);
+    }
+
+    public void HandleMaskPickup(GameObject maskObject)
+    {
+        Debug.LogFormat("PlayerController: Picking up mask {0}.", maskObject.name);
+        if (!maskObject.TryGetComponent<Mask>(out var maskComponent))
+        {
+            Debug.LogError("Mask component missing on mask object.");
+            return;
+        }
+        InventoryManager.Instance.AddMask(maskComponent.maskData);
+        UIManager.Instance.RefreshInventory();
+        Destroy(maskObject);
     }
 
     public void TryOpenDoor(GameObject doorObject)
@@ -48,7 +65,13 @@ public class GameManager : MonoBehaviour
             Debug.LogFormat("PlayerController: Missing key {0} for door.", doorComponent.doorData.key);
             return;
         }
-
+        
+        bool useSuccess = InventoryManager.Instance.UseItemByType(doorComponent.doorData.key);
+        if (!useSuccess)
+        {
+            Debug.LogError("Failed to use the key from inventory.");
+            return;
+        }
         Debug.LogFormat("PlayerController: Opening door with {0}.", doorComponent.doorData.key);
         doorComponent.OpenDoor();
     }
